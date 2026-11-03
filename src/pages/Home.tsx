@@ -55,8 +55,8 @@ const features = [
         <polyline points="19,14 22,14 22,10" stroke="#70B7FF" strokeWidth="1.4" fill="none" />
       </svg>
     ),
-    title: "Field Tested",
-    desc: "Real-world validation and analysis",
+    title: "Simulation First",
+    desc: "Validate failure recovery before flight testing",
   },
 ];
 
@@ -64,6 +64,9 @@ const statusItems = [
   { label: "Current Phase", value: "Requirements & Design" },
   { label: "Team Size", value: "5 Engineers" },
   { label: "Planned Effort", value: "592 Hours" },
+  { label: "Packet Delivery Target", value: "≥ 95%" },
+  { label: "Route Recovery Target", value: "≤ 3 Seconds" },
+  { label: "Failure Detection Target", value: "≤ 5 Seconds" },
   { label: "Semester", value: "Fall 2026" },
   { label: "Project Status", value: "In Development" },
 ];
@@ -242,8 +245,9 @@ export default function Home({ navOffset }: { navOffset: string }) {
                 How the Network Operates
               </h2>
               <p className="text-base leading-relaxed" style={{ color: "#A9B8CA" }}>
-                Three drones form a self-healing communications mesh. When the primary relay goes offline, the network
-                autonomously discovers an alternate path and restores telemetry — no human intervention required.
+                Three drones form a distributed telemetry mesh with a fourth ESP32-S3/SX1262 node connected to the
+                ground-station laptop. When the primary relay goes offline, the network detects the failure, invalidates
+                the route, and restores telemetry through a viable alternate path without manual reconfiguration.
               </p>
             </div>
             <div className="space-y-3">

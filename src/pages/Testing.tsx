@@ -211,7 +211,7 @@ export default function Testing({ navOffset }: { navOffset: string }) {
             className="inline-block mt-4 px-3 py-1.5 rounded border text-xs font-mono"
             style={{ borderColor: "rgba(245,158,11,0.3)", color: "#F59E0B", backgroundColor: "rgba(245,158,11,0.06)" }}
           >
-            ⚠ Demonstration Data — Replace With Measured Results
+            ⚠ Planning and illustrative data — replace with measured results from controlled trials
           </div>
         </div>
       </div>
@@ -220,15 +220,15 @@ export default function Testing({ navOffset }: { navOffset: string }) {
         {/* Initial targets */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-10">
           {[
-            { label: "Packet Delivery Target", value: "≥ 95%", actual: "95.2%", pass: true },
-            { label: "Recovery Time Target", value: "< 3.0s", actual: "2.08s avg", pass: true },
-            { label: "Controlled Trials", value: "≥ 10", actual: "10 completed", pass: true },
-            { label: "Critical Safety Defects", value: "0", actual: "0 found", pass: true },
-          ].map(({ label, value, actual, pass }) => (
+            { label: "Packet Delivery Target", value: "≥ 95%", actual: "Pending measurement" },
+            { label: "Recovery Time Target", value: "≤ 3.0s", actual: "Pending measurement" },
+            { label: "Controlled Trials", value: "≥ 10", actual: "Planned" },
+            { label: "Failure Detection Target", value: "≤ 5.0s", actual: "Pending measurement" },
+          ].map(({ label, value, actual }) => (
             <div
               key={label}
               className="rounded-xl border p-4"
-              style={{ backgroundColor: "#0B1B30", borderColor: pass ? "rgba(34,197,94,0.2)" : "rgba(239,68,68,0.2)" }}
+              style={{ backgroundColor: "#0B1B30", borderColor: "rgba(245,158,11,0.2)" }}
             >
               <p className="text-[10px] font-mono uppercase tracking-widest mb-2" style={{ color: "#A9B8CA" }}>
                 {label}
@@ -237,8 +237,8 @@ export default function Testing({ navOffset }: { navOffset: string }) {
                 {value}
               </p>
               <div className="flex items-center gap-1.5">
-                <div className="w-2 h-2 rounded-full" style={{ backgroundColor: pass ? "#22C55E" : "#EF4444" }} />
-                <p className="text-xs font-mono" style={{ color: pass ? "#22C55E" : "#EF4444" }}>
+                <div className="w-2 h-2 rounded-full" style={{ backgroundColor: "#F59E0B" }} />
+                <p className="text-xs font-mono" style={{ color: "#F59E0B" }}>
                   {actual}
                 </p>
               </div>
@@ -289,7 +289,7 @@ export default function Testing({ navOffset }: { navOffset: string }) {
             style={{ backgroundColor: "#0B1B30", borderColor: "rgba(148,163,184,0.12)" }}
           >
             <h3 className="text-sm font-semibold mb-4" style={{ color: "#F8FAFC" }}>
-              Packet Delivery Rate per Trial
+              Packet Delivery Rate per Trial (Illustrative)
             </h3>
             <div className="h-56">
               <ResponsiveContainer width="100%" height="100%">
@@ -322,7 +322,7 @@ export default function Testing({ navOffset }: { navOffset: string }) {
             style={{ backgroundColor: "#0B1B30", borderColor: "rgba(148,163,184,0.12)" }}
           >
             <h3 className="text-sm font-semibold mb-4" style={{ color: "#F8FAFC" }}>
-              Route Recovery Time per Trial
+              Route Recovery Time per Trial (Illustrative)
             </h3>
             <div className="h-56">
               <ResponsiveContainer width="100%" height="100%">
@@ -355,7 +355,7 @@ export default function Testing({ navOffset }: { navOffset: string }) {
             style={{ backgroundColor: "#0B1B30", borderColor: "rgba(148,163,184,0.12)" }}
           >
             <h3 className="text-sm font-semibold mb-4" style={{ color: "#F8FAFC" }}>
-              Performance Profile
+              Performance Profile (Targets vs. Illustrative)
             </h3>
             <div className="h-56">
               <ResponsiveContainer width="100%" height="100%">
@@ -387,7 +387,7 @@ export default function Testing({ navOffset }: { navOffset: string }) {
             style={{ backgroundColor: "#0B1B30", borderColor: "rgba(148,163,184,0.12)" }}
           >
             <h3 className="text-sm font-semibold mb-4" style={{ color: "#F8FAFC" }}>
-              Trial Outcomes
+              Trial Outcomes (Illustrative)
             </h3>
             <div className="space-y-3">
               {[
@@ -424,7 +424,7 @@ export default function Testing({ navOffset }: { navOffset: string }) {
 
         {/* Trial results table */}
         <h2 className="text-lg font-bold mb-4" style={{ color: "#F8FAFC" }}>
-          Trial Results Table
+          Trial Evidence Matrix (Illustrative)
         </h2>
         <div className="rounded-xl border overflow-hidden" style={{ borderColor: "rgba(148,163,184,0.12)" }}>
           <div className="overflow-x-auto">

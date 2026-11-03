@@ -266,7 +266,7 @@ export default function Dashboard({ navOffset }: { navOffset: string }) {
           <div className="flex items-center gap-2 mb-1">
             <div className="w-2 h-2 rounded-full animate-blink" style={{ backgroundColor: "#22C55E" }} />
             <p className="text-[10px] font-mono" style={{ color: "#22C55E" }}>
-              LIVE DEMO
+              SIMULATED SCENARIO
             </p>
           </div>
           <p className="text-[10px] font-mono" style={{ color: "rgba(169,184,202,0.5)" }}>

@@ -7,28 +7,52 @@ const DRONE_C = "https://images.unsplash.com/photo-1761893425281-09ad46325079?w=
 const tabs = ["Network Topology", "Hardware Stack", "Message Flow", "Failure Recovery", "Security"];
 
 const techCards = [
-  { name: "Raspberry Pi Zero 2 W", role: "Onboard computer (lightweight, low power)", icon: "⬡", color: "#EF4444" },
-  { name: "ESP32", role: "Mesh networking (Wi-Fi)", icon: "⬡", color: "#F59E0B" },
-  { name: "ArduPilot", role: "Flight control & telemetry", icon: "△", color: "#2491FF" },
-  { name: "MAVLink", role: "Standard communication protocol", icon: "⇄", color: "#70B7FF" },
-  { name: "FastAPI", role: "Ground-station backend API", icon: "⚡", color: "#22C55E" },
-  { name: "WebSockets", role: "Live bidirectional data stream", icon: "∞", color: "#A855F7" },
-  { name: "React", role: "Dashboard frontend framework", icon: "◎", color: "#38BDF8" },
-  { name: "Docker", role: "Reproducible deployment", icon: "◻", color: "#2491FF" },
+  { name: "MicroAir743v2", role: "PX4 flight controller", icon: "△", color: "#2491FF" },
+  { name: "ESP32-S3", role: "Custom mesh-node processor", icon: "⬡", color: "#F59E0B" },
+  { name: "SX1262 LoRa", role: "915 MHz multi-hop radio", icon: "⌁", color: "#EF4444" },
+  { name: "MAVLink over UART4", role: "Flight-controller telemetry link", icon: "⇄", color: "#70B7FF" },
+  { name: "Ground Station", role: "USB-connected laptop receiver", icon: "▣", color: "#22C55E" },
+  { name: "React Dashboard", role: "Operator monitoring interface", icon: "◎", color: "#A855F7" },
+  { name: "RadioLib", role: "SX1262 radio control library", icon: "◌", color: "#38BDF8" },
+  { name: "Arduino C++", role: "ESP32-S3 firmware environment", icon: "◻", color: "#2491FF" },
 ];
 
 const messageFlow = [
-  { step: 1, text: "Nodes broadcast authenticated heartbeats at regular intervals.", type: "normal" },
-  { step: 2, text: "Each node maintains a neighbor table with last-seen timestamps and link quality.", type: "normal" },
-  { step: 3, text: "Drone 3 selects the best available path to the ground station.", type: "normal" },
-  { step: 4, text: "Drone 2 stops responding — heartbeats no longer received.", type: "failure" },
-  { step: 5, text: "The failed route expires when the neighbor entry times out.", type: "failure" },
-  { step: 6, text: "The network selects another viable route to restore connectivity.", type: "recovery" },
-  { step: 7, text: "Telemetry packets resume flowing through the alternate path.", type: "recovery" },
-  { step: 8, text: "The ground station records route recovery time and packets lost.", type: "normal" },
+  { step: 1, text: "Each node sends periodic PING messages and records PONG responses.", type: "normal" },
+  {
+    step: 2,
+    text: "Neighbor tables track node ID, last reply, signal quality, noise, hop count, and missed replies.",
+    type: "normal",
+  },
+  {
+    step: 3,
+    text: "Drone 3 selects the best path to the ground station using hop count and link quality.",
+    type: "normal",
+  },
+  {
+    step: 4,
+    text: "Drone 2 stops responding and reaches the three-missed-heartbeat failure threshold.",
+    type: "failure",
+  },
+  {
+    step: 5,
+    text: "Routes using Drone 2 are invalidated; packets are validated for CRC, TTL, and duplicates.",
+    type: "failure",
+  },
+  { step: 6, text: "The network selects the remaining viable Drone 3 → Drone 1 path.", type: "recovery" },
+  {
+    step: 7,
+    text: "Telemetry resumes through the alternate route without operator reconfiguration.",
+    type: "recovery",
+  },
+  {
+    step: 8,
+    text: "The ground station records packet delivery, latency, route changes, and recovery time.",
+    type: "normal",
+  },
 ];
 
-const droneSpecs = [["Raspberry Pi Zero 2 W", "ESP32", "ArduPilot", "MAVLink"]];
+const droneSpecs = [["MicroAir743v2", "PX4", "ESP32-S3", "SX1262 LoRa"]];
 
 type DroneConfig = {
   src: string;
@@ -167,38 +191,38 @@ export default function Architecture({ navOffset }: { navOffset: string }) {
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {[
                 {
-                  name: "Raspberry Pi Zero 2 W",
-                  type: "Companion Computer",
+                  name: "MicroAir743v2-AIO-45A",
+                  type: "Flight Controller",
                   specs: [
-                    "ARM Cortex-A53 quad-core",
-                    "512 MB RAM",
-                    "802.11 b/g/n Wi-Fi",
-                    "Bluetooth 4.2",
-                    "Micro-USB power",
+                    "PX4 flight-control firmware",
+                    "MAVLink telemetry output",
+                    "UART4 mesh-node interface",
+                    "GPS and flight-state source",
+                    "5V regulated accessory power",
                   ],
-                  color: "#EF4444",
+                  color: "#2491FF",
                 },
                 {
-                  name: "ESP32 Dev Module",
-                  type: "P2P Radio Experiments",
+                  name: "ESP32-S3 + SX1262",
+                  type: "Mesh Node",
                   specs: [
-                    "Dual-core Xtensa LX6",
-                    "520 KB SRAM",
-                    "802.11 b/g/n + BT",
-                    "Mesh radio capability",
-                    "Low-power modes",
+                    "Custom C++ mesh firmware",
+                    "915 MHz LoRa radio",
+                    "SPI radio connection",
+                    "Node identity and discovery",
+                    "Routing and telemetry forwarding",
                   ],
                   color: "#F59E0B",
                 },
                 {
-                  name: "ArduPilot Flight Stack",
-                  type: "Flight Control",
+                  name: "PX4 + MAVLink",
+                  type: "Telemetry Source",
                   specs: [
-                    "MAVLink v2 telemetry",
-                    "GPS/IMU integration",
-                    "Configurable failsafes",
-                    "Mission planner support",
-                    "Extensive logging",
+                    "Global position",
+                    "Altitude and velocity",
+                    "Battery status",
+                    "Flight mode and vehicle status",
+                    "Flight control remains separate",
                   ],
                   color: "#2491FF",
                 },
@@ -206,11 +230,11 @@ export default function Architecture({ navOffset }: { navOffset: string }) {
                   name: "3D-Printed Frame",
                   type: "Mechanical Integration",
                   specs: [
-                    "PLA/PETG composite",
-                    "Custom payload mount",
-                    "Cable management tray",
-                    "Tool-free access",
-                    "Repeatable assembly",
+                    "Three drone platforms",
+                    "Payload and radio mounting",
+                    "Compatible wiring and voltage",
+                    "Bench-to-flight integration",
+                    "Controlled test geometry",
                   ],
                   color: "#22C55E",
                 },
@@ -218,11 +242,11 @@ export default function Architecture({ navOffset }: { navOffset: string }) {
                   name: "LiPo Battery System",
                   type: "Power & Monitoring",
                   specs: [
-                    "3S / 4S configuration",
-                    "Per-node battery telemetry",
-                    "Low-voltage cutoff",
-                    "Flight time logging",
-                    "Charge cycle tracking",
+                    "CNHL LiPo source",
+                    "Flight controller power system",
+                    "5V regulated mesh-node supply",
+                    "Battery status from PX4",
+                    "Battery safety procedures",
                   ],
                   color: "#A855F7",
                 },
@@ -230,11 +254,11 @@ export default function Architecture({ navOffset }: { navOffset: string }) {
                   name: "Laptop Ground Station",
                   type: "Command Interface",
                   specs: [
-                    "Ubuntu 22.04 LTS",
-                    "Docker runtime",
-                    "React dashboard",
-                    "FastAPI + WebSocket",
-                    "MAVLink GCS",
+                    "Laptop-connected ESP32-S3 node",
+                    "USB serial packet input",
+                    "Packet validation and decoding",
+                    "In-memory telemetry records",
+                    "React operator dashboard",
                   ],
                   color: "#70B7FF",
                 },
@@ -334,7 +358,7 @@ export default function Architecture({ navOffset }: { navOffset: string }) {
                   phase: "Detection",
                   color: "#F59E0B",
                   items: [
-                    "Heartbeat timeout for D2 detected",
+                    "Three consecutive PING replies missed",
                     "Neighbor table entry invalidated",
                     "Route marked unavailable",
                     "Alert flagged for ground station",
@@ -344,10 +368,10 @@ export default function Architecture({ navOffset }: { navOffset: string }) {
                   phase: "Re-Routing",
                   color: "#2491FF",
                   items: [
-                    "Available neighbors queried",
-                    "Alternate path D3→D1 calculated",
-                    "Route cost evaluated vs threshold",
-                    "New primary path committed",
+                    "Active neighbors re-evaluated",
+                    "Alternate path D3→D1 selected",
+                    "Hop count and link quality compared",
+                    "New route used without manual setup",
                   ],
                 },
                 {
@@ -405,20 +429,20 @@ export default function Architecture({ navOffset }: { navOffset: string }) {
             <div className="grid sm:grid-cols-2 gap-4 max-w-3xl">
               {[
                 {
-                  title: "HMAC Authentication",
-                  desc: "Each heartbeat and telemetry packet carries an HMAC signature to prevent spoofing.",
+                  title: "Packet Integrity",
+                  desc: "Incoming frames are checked for valid length, protocol fields, CRC, TTL, and destination before forwarding.",
                 },
                 {
-                  title: "Node Identity Verification",
-                  desc: "Nodes use pre-shared key pairs established during ground configuration before flight.",
+                  title: "Node Identity",
+                  desc: "Every mesh node has a unique ID used for discovery, neighbor tracking, routing, and telemetry attribution.",
                 },
                 {
-                  title: "Replay Attack Prevention",
-                  desc: "Sequence numbers and timestamps reject duplicate or out-of-order packets automatically.",
+                  title: "Duplicate Prevention",
+                  desc: "Source IDs and message sequence numbers allow nodes to reject packets they have already processed.",
                 },
                 {
-                  title: "Ground-Station TLS",
-                  desc: "All WebSocket and REST traffic between nodes and the dashboard is encrypted in transit.",
+                  title: "Flight-Control Separation",
+                  desc: "PX4 remains responsible for flight behavior while the mesh node transports telemetry and route state.",
                 },
               ].map(({ title, desc }) => (
                 <div

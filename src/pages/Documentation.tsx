@@ -63,7 +63,7 @@ const docs: Doc[] = [
   },
   {
     title: "Message Protocol Spec",
-    desc: "MAVLink extensions, heartbeat structure, HMAC authentication and routing table format.",
+    desc: "Mesh packet fields, CRC validation, TTL handling, duplicate prevention, heartbeat records and route state.",
     type: "PDF",
     updated: "Sep 24, 2026",
     category: "Engineering",
@@ -71,7 +71,7 @@ const docs: Doc[] = [
   },
   {
     title: "Configuration Guide",
-    desc: "Deployment instructions for ground station, Docker setup and node flashing procedures.",
+    desc: "ESP32-S3 and SX1262 setup, PX4 UART4 telemetry wiring, node identity, radio parameters and ground-station startup.",
     type: "PDF",
     updated: "Oct 5, 2026",
     category: "Engineering",
