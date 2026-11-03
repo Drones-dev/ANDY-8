@@ -4,35 +4,35 @@ const team = [
     role: "Systems/Integration Engineer",
     focus: "System architecture, hardware integration, project coordination, schedule and risk management.",
     color: "#2491FF",
-    photo: "/team/imani-gad.png",
+    photo: "team/imani-gad.png",
   },
   {
     name: "Maryam Baban",
     role: "Project Documentation & Software Developer",
     focus: "Requirements, progress tracking, reports, presentations and coding support.",
     color: "#A855F7",
-    photo: "/team/maryam-baban.png",
+    photo: "team/maryam-baban.png",
   },
   {
     name: "Carlos Guerrero",
     role: "Mesh Networking & Software Developer",
     focus: "Routing logic, telemetry processing, automated testing and software implementation.",
     color: "#22C55E",
-    photo: "/team/carlos-guerrero.png",
+    photo: "team/carlos-guerrero.png",
   },
   {
     name: "Harom Andargachew",
     role: "Ground-Station & Dashboard Developer",
     focus: "Backend services, telemetry visualization, dashboard implementation and integration.",
     color: "#F59E0B",
-    photo: "/team/harom-andargachew.png",
+    photo: "team/harom-andargachew.png",
   },
   {
     name: "Mekai Matia",
     role: "Prototype & Systems Engineer",
     focus: "3D-printed prototypes, mechanical integration, payload mounting and hardware testing.",
     color: "#70B7FF",
-    photo: "/team/mekai-matia.png",
+    photo: "team/mekai-matia.png",
   },
 ];
 
@@ -71,7 +71,7 @@ export default function TeamPage({ navOffset }: { navOffset: string }) {
                 style={{ backgroundColor: `${color}10` }}
               >
                 <img
-                  src={photo}
+                  src={`${import.meta.env.BASE_URL}${photo}`}
                   alt={`${name} — ANDY-8 RED team member`}
                   className="absolute inset-0 w-full h-full object-contain object-center"
                   style={{ backgroundColor: `${color}10` }}
