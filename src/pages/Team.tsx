@@ -3,41 +3,36 @@ const team = [
     name: "Imani Gad",
     role: "Systems/Integration Engineer",
     focus: "System architecture, hardware integration, project coordination, schedule and risk management.",
-    initials: "IG",
     color: "#2491FF",
-    unsplashId: "photo-1508214751196-bcfd4ca60f91",
+    photo: "/team/imani-gad.png",
   },
   {
     name: "Maryam Baban",
     role: "Project Documentation & Software Developer",
     focus: "Requirements, progress tracking, reports, presentations and coding support.",
-    initials: "MB",
     color: "#A855F7",
-    unsplashId: "photo-1573497019940-1c28c88b4f3e",
+    photo: "/team/maryam-baban.png",
   },
   {
     name: "Carlos Guerrero",
     role: "Mesh Networking & Software Developer",
     focus: "Routing logic, telemetry processing, automated testing and software implementation.",
-    initials: "CG",
     color: "#22C55E",
-    unsplashId: "photo-1506794778202-cad84cf45f1d",
+    photo: "/team/carlos-guerrero.png",
   },
   {
     name: "Harom Andargachew",
     role: "Ground-Station & Dashboard Developer",
     focus: "Backend services, telemetry visualization, dashboard implementation and integration.",
-    initials: "HA",
     color: "#F59E0B",
-    unsplashId: "photo-1531384441138-2736e62e0919",
+    photo: "/team/harom-andargachew.png",
   },
   {
     name: "Mekai Matia",
     role: "Prototype & Systems Engineer",
     focus: "3D-printed prototypes, mechanical integration, payload mounting and hardware testing.",
-    initials: "MM",
     color: "#70B7FF",
-    unsplashId: "photo-1500648767791-00dcc994a43e",
+    photo: "/team/mekai-matia.png",
   },
 ];
 
@@ -62,7 +57,7 @@ export default function TeamPage({ navOffset }: { navOffset: string }) {
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Team grid */}
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {team.map(({ name, role, focus, initials, color, unsplashId }) => (
+          {team.map(({ name, role, focus, color, photo }) => (
             <div
               key={name}
               className="rounded-xl border overflow-hidden transition-all group"
@@ -76,18 +71,12 @@ export default function TeamPage({ navOffset }: { navOffset: string }) {
                 style={{ backgroundColor: `${color}10` }}
               >
                 <img
-                  src={`https://images.unsplash.com/${unsplashId}?w=400&h=400&fit=crop&auto=format&face`}
-                  alt={`${name} — professional headshot placeholder`}
-                  className="absolute inset-0 w-full h-full object-cover object-top opacity-40"
+                  src={photo}
+                  alt={`${name} — ANDY-8 RED team member`}
+                  className="absolute inset-0 w-full h-full object-contain object-center"
                   style={{ backgroundColor: `${color}10` }}
                   loading="lazy"
                 />
-                <div
-                  className="relative w-20 h-20 rounded-full flex items-center justify-center text-2xl font-bold font-mono border-2 z-10"
-                  style={{ backgroundColor: `${color}20`, borderColor: color, color }}
-                >
-                  {initials}
-                </div>
                 <div
                   className="absolute bottom-3 right-3 w-2 h-2 rounded-full z-10"
                   style={{ backgroundColor: color }}
