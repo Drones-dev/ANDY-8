@@ -19,7 +19,7 @@ const testStages = [
     name: "Unit Testing",
     status: "In Progress",
     color: "#2491FF",
-    desc: "Individual module validation — routing logic, heartbeat timing, HMAC verification.",
+    desc: "Individual module validation — routing logic, heartbeat timing, CRC checks, TTL handling, and duplicate prevention.",
   },
   {
     id: 2,
@@ -40,7 +40,7 @@ const testStages = [
     name: "One-Drone Integration",
     status: "Pending",
     color: "#A9B8CA",
-    desc: "Single airborne node with ground station. Confirms ArduPilot/MAVLink integration.",
+    desc: "Single airborne node with ground station. Confirms PX4/MAVLink integration.",
   },
   {
     id: 5,
@@ -211,7 +211,7 @@ export default function Testing({ navOffset }: { navOffset: string }) {
             className="inline-block mt-4 px-3 py-1.5 rounded border text-xs font-mono"
             style={{ borderColor: "rgba(245,158,11,0.3)", color: "#F59E0B", backgroundColor: "rgba(245,158,11,0.06)" }}
           >
-            ⚠ Planning and illustrative data — replace with measured results from controlled trials
+            Simulation only · No physical-trial results are published yet
           </div>
         </div>
       </div>
@@ -289,7 +289,7 @@ export default function Testing({ navOffset }: { navOffset: string }) {
             style={{ backgroundColor: "#0B1B30", borderColor: "rgba(148,163,184,0.12)" }}
           >
             <h3 className="text-sm font-semibold mb-4" style={{ color: "#F8FAFC" }}>
-              Packet Delivery Rate per Trial (Illustrative)
+              Simulated Packet Delivery Rate per Run
             </h3>
             <div className="h-56">
               <ResponsiveContainer width="100%" height="100%">
@@ -310,7 +310,7 @@ export default function Testing({ navOffset }: { navOffset: string }) {
                     stroke="#2491FF"
                     strokeWidth={1}
                   />
-                  <Bar dataKey="actual" name="Actual" fill="#22C55E" radius={[2, 2, 0, 0]} />
+                  <Bar dataKey="actual" name="Simulated" fill="#22C55E" radius={[2, 2, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -322,7 +322,7 @@ export default function Testing({ navOffset }: { navOffset: string }) {
             style={{ backgroundColor: "#0B1B30", borderColor: "rgba(148,163,184,0.12)" }}
           >
             <h3 className="text-sm font-semibold mb-4" style={{ color: "#F8FAFC" }}>
-              Route Recovery Time per Trial (Illustrative)
+              Simulated Route Recovery Time per Run
             </h3>
             <div className="h-56">
               <ResponsiveContainer width="100%" height="100%">
@@ -343,7 +343,7 @@ export default function Testing({ navOffset }: { navOffset: string }) {
                     stroke="#F59E0B"
                     strokeWidth={1}
                   />
-                  <Bar dataKey="actual" name="Actual" fill="#2491FF" radius={[2, 2, 0, 0]} />
+                  <Bar dataKey="actual" name="Simulated" fill="#2491FF" radius={[2, 2, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -373,7 +373,7 @@ export default function Testing({ navOffset }: { navOffset: string }) {
                     fillOpacity={0.1}
                     strokeDasharray="4 2"
                   />
-                  <Radar name="Actual" dataKey="actual" stroke="#22C55E" fill="#22C55E" fillOpacity={0.2} />
+                  <Radar name="Simulated" dataKey="actual" stroke="#22C55E" fill="#22C55E" fillOpacity={0.2} />
                   <Legend wrapperStyle={{ fontSize: 11, color: "#A9B8CA" }} />
                   <Tooltip {...ttStyle} />
                 </RadarChart>
@@ -387,7 +387,7 @@ export default function Testing({ navOffset }: { navOffset: string }) {
             style={{ backgroundColor: "#0B1B30", borderColor: "rgba(148,163,184,0.12)" }}
           >
             <h3 className="text-sm font-semibold mb-4" style={{ color: "#F8FAFC" }}>
-              Trial Outcomes (Illustrative)
+              Simulation Run Outcomes
             </h3>
             <div className="space-y-3">
               {[
@@ -422,18 +422,21 @@ export default function Testing({ navOffset }: { navOffset: string }) {
           </div>
         </div>
 
-        {/* Trial results table */}
+        {/* Simulation results table */}
         <h2 className="text-lg font-bold mb-4" style={{ color: "#F8FAFC" }}>
-          Trial Evidence Matrix (Illustrative)
+          Simulation Evidence Matrix
         </h2>
         <div className="rounded-xl border overflow-hidden" style={{ borderColor: "rgba(148,163,184,0.12)" }}>
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[700px]" aria-label="Trial results">
+            <table
+              className="w-full min-w-[700px]"
+              aria-label="Illustrative software simulation results; not physical trial evidence"
+            >
               <thead>
                 <tr style={{ backgroundColor: "#0B1B30", borderBottom: "1px solid rgba(148,163,184,0.12)" }}>
                   {[
-                    "Trial ID",
-                    "Date",
+                    "Run ID",
+                    "Evidence Type",
                     "Initial Route",
                     "Failure Time",
                     "Recovery Time",
@@ -461,7 +464,7 @@ export default function Testing({ navOffset }: { navOffset: string }) {
                       {t.id}
                     </td>
                     <td className="px-4 py-3 text-xs font-mono" style={{ color: "#A9B8CA" }}>
-                      {t.date}
+                      Software simulation
                     </td>
                     <td className="px-4 py-3 text-xs font-mono" style={{ color: "#F8FAFC" }}>
                       {t.route}

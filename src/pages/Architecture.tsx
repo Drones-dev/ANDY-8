@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type KeyboardEvent } from "react";
 
 const DRONE_A = "https://images.unsplash.com/photo-1621506683092-a4a47fc01dbd?w=260&h=160&fit=crop&auto=format&q=80";
 const DRONE_B = "https://images.unsplash.com/photo-1679136578198-539e835445be?w=260&h=160&fit=crop&auto=format&q=80";
@@ -76,6 +76,18 @@ const failureDrones: DroneConfig[] = [
 
 export default function Architecture({ navOffset }: { navOffset: string }) {
   const [activeTab, setActiveTab] = useState(0);
+  const moveTab = (event: KeyboardEvent, index: number) => {
+    if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
+    event.preventDefault();
+    const next =
+      event.key === "Home"
+        ? 0
+        : event.key === "End"
+          ? tabs.length - 1
+          : (index + (event.key === "ArrowRight" ? 1 : -1) + tabs.length) % tabs.length;
+    setActiveTab(next);
+    document.getElementById(`tab-${next}`)?.focus();
+  };
 
   return (
     <div className={`min-h-screen ${navOffset}`} style={{ backgroundColor: "#061426" }}>
@@ -102,6 +114,8 @@ export default function Architecture({ navOffset }: { navOffset: string }) {
                 aria-controls={`tab-panel-${i}`}
                 id={`tab-${i}`}
                 onClick={() => setActiveTab(i)}
+                onKeyDown={(event) => moveTab(event, i)}
+                tabIndex={activeTab === i ? 0 : -1}
                 className="px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-all"
                 style={{
                   borderColor: activeTab === i ? "#2491FF" : "transparent",

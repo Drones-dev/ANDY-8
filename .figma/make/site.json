@@ -8,7 +8,7 @@
     "image": "./og.png"
   },
   "accessibility": {
-    "addBypassLinks": false,
+    "addBypassLinks": true,
     "ignoreReducedMotion": false
   }
 }

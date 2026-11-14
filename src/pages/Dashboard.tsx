@@ -67,16 +67,26 @@ const nodeStates = {
   ],
 };
 
-const metrics = [
-  { label: "Packet Delivery", value: "95%+", sub: "Target met", color: "#22C55E" },
-  { label: "Recovery Target", value: "<3s", sub: "Avg 1.8s actual", color: "#22C55E" },
-  { label: "Controlled Trials", value: "10", sub: "Completed", color: "#2491FF" },
-  { label: "Successful Recoveries", value: "9/10", sub: "90% success rate", color: "#22C55E" },
-  { label: "Median Latency", value: "42 ms", sub: "End-to-end", color: "#70B7FF" },
-  { label: "Active Links", value: "2", sub: "D3→D1, D1→GS", color: "#2491FF" },
-];
+const metricStates = {
+  normal: [
+    { label: "Packet Delivery", value: "97%", sub: "Simulated nominal run", color: "#22C55E" },
+    { label: "Recovery", value: "N/A", sub: "No failure injected", color: "#A9B8CA" },
+    { label: "Simulation Run", value: "Nominal", sub: "All nodes online", color: "#2491FF" },
+    { label: "Route State", value: "Stable", sub: "No route changes", color: "#22C55E" },
+    { label: "Median Latency", value: "39 ms", sub: "Illustrative output", color: "#70B7FF" },
+    { label: "Active Links", value: "3", sub: "D3→D2→D1→GS", color: "#2491FF" },
+  ],
+  failure: [
+    { label: "Packet Delivery", value: "94%", sub: "Simulated failure run", color: "#F59E0B" },
+    { label: "Recovery", value: "1.8s", sub: "Illustrative output", color: "#22C55E" },
+    { label: "Simulation Run", value: "Failure", sub: "D2 dropout injected", color: "#EF4444" },
+    { label: "Route State", value: "Recovered", sub: "Alternate path selected", color: "#22C55E" },
+    { label: "Median Latency", value: "47 ms", sub: "Illustrative output", color: "#70B7FF" },
+    { label: "Active Links", value: "2", sub: "D3→D1→GS", color: "#2491FF" },
+  ],
+};
 
-const pdrData = [
+const failurePdrData = [
   { t: "0:00", pdr: 97 },
   { t: "0:30", pdr: 96 },
   { t: "1:00", pdr: 98 },
@@ -97,12 +107,21 @@ const pdrData = [
   { t: "6:00", pdr: 96 },
 ];
 
+const nominalPdrData = failurePdrData.map((point, index) => ({ ...point, pdr: [97, 96, 98, 97, 96, 97][index % 6] }));
+
 const recoveryEvents = [
   { time: "00:04:12", event: "Relay node stopped responding", type: "FAILURE" as const },
   { time: "00:04:13", event: "Failed route invalidated", type: "WARNING" as const },
   { time: "00:04:14", event: "Alternate route selected (D3→D1→GS)", type: "INFO" as const },
   { time: "00:04:15", event: "Telemetry stream restored", type: "RECOVERY" as const },
   { time: "00:04:18", event: "System stable — recovery time: 1.8s", type: "INFO" as const },
+];
+
+const nominalEvents = [
+  { time: "00:00:00", event: "Simulation initialized with all nodes online", type: "INFO" as const },
+  { time: "00:02:00", event: "Primary route D3→D2→D1→GS remains stable", type: "INFO" as const },
+  { time: "00:04:00", event: "No heartbeat timeouts or route changes detected", type: "INFO" as const },
+  { time: "00:06:00", event: "Nominal simulation completed", type: "RECOVERY" as const },
 ];
 
 const eventLog = [
@@ -148,7 +167,7 @@ const eventLog = [
     time: "06:01:00",
     node: "GS",
     type: "INFO" as const,
-    message: "Trial #09 initiated — recording enabled",
+    message: "Simulation run #09 initiated — recording enabled",
   },
 ];
 
@@ -177,25 +196,41 @@ export default function Dashboard({ navOffset }: { navOffset: string }) {
   const [scenario, setScenario] = useState<"normal" | "failure">("failure");
   const [trial, setTrial] = useState("09");
   const nodes = nodeStates[scenario];
+  const metrics = metricStates[scenario];
+  const pdrData = scenario === "failure" ? failurePdrData : nominalPdrData;
+  const timelineEvents = scenario === "failure" ? recoveryEvents : nominalEvents;
+  const activeLog = scenario === "failure" ? eventLog : eventLog.filter((event) => event.type === "INFO");
 
   const exportReport = () => {
-    const rows = [
-      ["ANDY 8 Demonstration Trial", `#${trial}`],
+    const rows: (string | number)[][] = [
+      ["ANDY 8 Software Simulation Run", `#${trial}`],
       ["Scenario", scenario === "failure" ? "Drone 2 offline — route recovered" : "All nodes online"],
       ["Active route", scenario === "failure" ? "D3 → D1 → Ground Station" : "D3 → D2 → D1 → Ground Station"],
-      ["Data notice", "Demonstration data — not live flight telemetry"],
+      ["Data notice", "Illustrative software simulation — not physical flight telemetry"],
+      [],
+      ["NODE HEALTH"],
+      ["Node", "Label", "Status", "Battery %", "Link quality %", "Last packet"],
+      ...nodes.map((node) => [node.id, node.label, node.status, node.battery, node.linkQuality, node.lastPacket]),
+      [],
+      ["PACKET DELIVERY SERIES"],
+      ["Elapsed", "PDR %"],
+      ...pdrData.map((point) => [point.t, point.pdr]),
+      [],
+      ["EVENTS"],
+      ["Time", "Type", "Description"],
+      ...timelineEvents.map((event) => [event.time, event.type, event.event]),
     ];
     const csv = rows.map((row) => row.map((cell) => `"${cell}"`).join(",")).join("\n");
     const url = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
     const anchor = document.createElement("a");
     anchor.href = url;
-    anchor.download = `andy-8-trial-${trial}.csv`;
+    anchor.download = `andy-8-simulation-${trial}-${scenario}.csv`;
     anchor.click();
     URL.revokeObjectURL(url);
     setExportConfirm(false);
   };
 
-  const filteredLog = eventLog.filter((e) => {
+  const filteredLog = activeLog.filter((e) => {
     const nodeMatch = nodeFilter === "ALL" || e.node === nodeFilter;
     const typeMatch = typeFilter === "ALL" || e.type === typeFilter;
     return nodeMatch && typeMatch;
@@ -270,7 +305,7 @@ export default function Dashboard({ navOffset }: { navOffset: string }) {
             </p>
           </div>
           <p className="text-[10px] font-mono" style={{ color: "rgba(169,184,202,0.5)" }}>
-            Demo data — Trial #{trial}
+            Illustrative data — Run #{trial}
           </p>
         </div>
       </aside>
@@ -312,13 +347,13 @@ export default function Dashboard({ navOffset }: { navOffset: string }) {
           </div>
           <div className="flex items-center gap-3">
             <label className="hidden sm:flex items-center gap-2 text-xs font-mono" style={{ color: "#A9B8CA" }}>
-              TRIAL
+              RUN
               <select
                 value={trial}
                 onChange={(event) => setTrial(event.target.value)}
                 className="rounded border px-2 py-1"
                 style={{ backgroundColor: "#061426", borderColor: "rgba(148,163,184,0.2)", color: "#F8FAFC" }}
-                aria-label="Select demonstration trial"
+                aria-label="Select software simulation run"
               >
                 {["07", "08", "09", "10"].map((value) => (
                   <option key={value} value={value}>
@@ -339,7 +374,7 @@ export default function Dashboard({ navOffset }: { navOffset: string }) {
               onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "rgba(36,145,255,0.06)")}
             >
               <Download size={13} aria-hidden="true" className="inline mr-1.5" />
-              Export Trial Report
+              Export Simulation Data
             </button>
           </div>
         </div>
@@ -354,7 +389,7 @@ export default function Dashboard({ navOffset }: { navOffset: string }) {
               Export Report
             </p>
             <p className="text-xs mb-3" style={{ color: "#A9B8CA" }}>
-              Trial #{trial} demonstration report will be downloaded as CSV.
+              Run #{trial} node health, time series, and events will be downloaded as CSV.
             </p>
             <div className="flex gap-2">
               <button
@@ -539,7 +574,7 @@ export default function Dashboard({ navOffset }: { navOffset: string }) {
                     Packet Delivery Rate
                   </h2>
                   <p className="text-xs font-mono mt-0.5" style={{ color: "#A9B8CA" }}>
-                    Trial #{trial} — 6-minute window
+                    Simulation run #{trial} — 6-minute window
                   </p>
                 </div>
                 <div
@@ -558,7 +593,15 @@ export default function Dashboard({ navOffset }: { navOffset: string }) {
                   </span>
                 </div>
               </div>
-              <div className="h-48">
+              <div
+                className="h-48"
+                role="img"
+                aria-label={
+                  scenario === "failure"
+                    ? "Simulated packet delivery falls during a relay failure at four minutes twelve seconds and recovers by four minutes fifteen seconds."
+                    : "Simulated packet delivery remains between ninety-five and ninety-eight percent throughout the nominal run."
+                }
+              >
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={pdrData} margin={{ top: 4, right: 8, bottom: 0, left: -8 }}>
                     <CartesianGrid stroke="rgba(148,163,184,0.08)" />
@@ -597,6 +640,9 @@ export default function Dashboard({ navOffset }: { navOffset: string }) {
                   </LineChart>
                 </ResponsiveContainer>
               </div>
+              <p className="sr-only">
+                This chart displays illustrative software simulation output and is not measured flight-test evidence.
+              </p>
             </div>
           )}
 
@@ -607,10 +653,10 @@ export default function Dashboard({ navOffset }: { navOffset: string }) {
               style={{ backgroundColor: "#0B1B30", borderColor: "rgba(148,163,184,0.12)" }}
             >
               <h2 className="text-sm font-semibold mb-4" style={{ color: "#F8FAFC" }}>
-                Route Recovery Timeline — Trial #{trial}
+                {scenario === "failure" ? "Route Recovery Timeline" : "Nominal Route Timeline"} — Run #{trial}
               </h2>
               <div className="space-y-2">
-                {recoveryEvents.map(({ time, event, type }) => (
+                {timelineEvents.map(({ time, event, type }) => (
                   <div
                     key={time}
                     className="flex items-start gap-3 p-3 rounded-lg border"

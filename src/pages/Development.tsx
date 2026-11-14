@@ -2,9 +2,9 @@ const phases = [
   {
     id: 1,
     name: "Requirements",
-    status: "In Progress",
-    color: "#F59E0B",
-    pct: 70,
+    status: "Review",
+    color: "#22C55E",
+    pct: 100,
     planned: 88,
     completed: [
       "System requirements drafted",
@@ -12,7 +12,7 @@ const phases = [
       "Risk register initialized",
       "Stakeholder review meeting",
     ],
-    remaining: ["Final requirements sign-off", "Requirements traceability matrix", "Baseline document submission"],
+    remaining: ["Confirm traceability against final physical-test evidence"],
     deliverables: ["Project Plan", "Requirements Baseline", "Risk Register"],
     months: ["Sep"],
   },
@@ -21,32 +21,27 @@ const phases = [
     name: "Project Design",
     status: "In Progress",
     color: "#2491FF",
-    pct: 40,
+    pct: 90,
     planned: 120,
     completed: ["System architecture defined", "Hardware selection finalized", "Network topology designed"],
-    remaining: [
-      "Protocol specification",
-      "API contract documentation",
-      "Design review sign-off",
-      "Hardware procurement complete",
-    ],
+    remaining: ["Design review sign-off", "Verify final mounting and wiring against the physical build"],
     deliverables: ["System Architecture Doc", "Hardware Inventory", "Message Protocol Spec"],
     months: ["Sep", "Oct"],
   },
   {
     id: 3,
     name: "Development",
-    status: "Pending",
-    color: "#A9B8CA",
-    pct: 0,
+    status: "In Progress",
+    color: "#2491FF",
+    pct: 55,
     planned: 200,
-    completed: [],
+    completed: ["Dashboard frontend", "Architecture and route-state simulation", "GitHub Pages deployment"],
     remaining: [
       "Node firmware implementation",
       "Mesh routing algorithm",
       "Ground-station backend",
-      "Dashboard frontend",
-      "Docker deployment",
+      "Ground-station integration",
+      "Physical node integration",
     ],
     deliverables: ["Integrated Prototype", "Source Repository", "Configuration Guide"],
     months: ["Oct", "Nov"],
@@ -54,11 +49,11 @@ const phases = [
   {
     id: 4,
     name: "Testing",
-    status: "Pending",
-    color: "#A9B8CA",
-    pct: 0,
+    status: "Simulation",
+    color: "#F59E0B",
+    pct: 25,
     planned: 120,
-    completed: [],
+    completed: ["Software simulation scenarios", "Dashboard test harness"],
     remaining: [
       "Unit test suite",
       "Software simulation",
@@ -74,7 +69,7 @@ const phases = [
     name: "Final Report",
     status: "Pending",
     color: "#A9B8CA",
-    pct: 0,
+    pct: 10,
     planned: 64,
     completed: [],
     remaining: ["Final report draft", "Presentation slides", "Demonstration video", "C-Day delivery"],
@@ -89,16 +84,16 @@ const milestones = [
     label: "Milestone 1",
     title: "Requirements Baseline",
     date: "Sep 26, 2026",
-    status: "Upcoming",
-    color: "#F59E0B",
+    status: "Complete",
+    color: "#22C55E",
   },
   {
     id: "M2",
     label: "Milestone 2",
     title: "Integrated Prototype",
     date: "Nov 7, 2026",
-    status: "Pending",
-    color: "#A9B8CA",
+    status: "Verify with team",
+    color: "#F59E0B",
   },
   {
     id: "M3",
@@ -138,6 +133,10 @@ export default function Development({ navOffset }: { navOffset: string }) {
           <p className="text-base" style={{ color: "#A9B8CA" }}>
             Five-phase software development lifecycle — Fall 2026
           </p>
+          <p className="text-xs mt-3 max-w-3xl" style={{ color: "#7F93AA" }}>
+            Website progress estimate updated November 13, 2026. Confirm milestone completion and hours against the
+            team&apos;s official project tracker.
+          </p>
         </div>
       </div>
 
@@ -147,8 +146,8 @@ export default function Development({ navOffset }: { navOffset: string }) {
           {[
             { label: "Planned Tasks", value: "31" },
             { label: "Estimated Hours", value: "592" },
-            { label: "Schedule Status", value: "On Track" },
-            { label: "Current Phase", value: "Design" },
+            { label: "Schedule Status", value: "Team review needed" },
+            { label: "Current Phase", value: "Development + Simulation" },
           ].map(({ label, value }) => (
             <div
               key={label}

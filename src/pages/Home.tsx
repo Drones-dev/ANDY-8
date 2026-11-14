@@ -1,6 +1,9 @@
 import { Link } from "react-router-dom";
+import { motion, useReducedMotion } from "framer-motion";
+import HowItWorks from "../components/HowItWorks";
+import DroneExplorer from "../components/DroneExplorer";
 
-const HERO_BG = "https://images.unsplash.com/photo-1533983272060-edb6f56af634?w=1920&h=1080&fit=crop&auto=format&q=80";
+const HERO_BG = `${import.meta.env.BASE_URL}visuals/andy8-fleet-3d.jpg`;
 const DRONE_A = "https://images.unsplash.com/photo-1621506683092-a4a47fc01dbd?w=320&h=200&fit=crop&auto=format&q=80";
 const DRONE_B = "https://images.unsplash.com/photo-1679136578198-539e835445be?w=320&h=200&fit=crop&auto=format&q=80";
 const DRONE_C = "https://images.unsplash.com/photo-1761893425281-09ad46325079?w=320&h=200&fit=crop&auto=format&q=80";
@@ -61,17 +64,18 @@ const features = [
 ];
 
 const statusItems = [
-  { label: "Current Phase", value: "Requirements & Design" },
+  { label: "Current Phase", value: "Development & Simulation" },
   { label: "Team Size", value: "5 Engineers" },
   { label: "Planned Effort", value: "592 Hours" },
   { label: "Packet Delivery Target", value: "≥ 95%" },
   { label: "Route Recovery Target", value: "≤ 3 Seconds" },
   { label: "Failure Detection Target", value: "≤ 5 Seconds" },
   { label: "Semester", value: "Fall 2026" },
-  { label: "Project Status", value: "In Development" },
+  { label: "Project Status", value: "Implementation in progress" },
 ];
 
 export default function Home({ navOffset }: { navOffset: string }) {
+  const reduced = useReducedMotion();
   return (
     <div className="min-h-screen" style={{ backgroundColor: "#061426" }}>
       {/* ── HERO ── */}
@@ -79,9 +83,9 @@ export default function Home({ navOffset }: { navOffset: string }) {
         {/* Background */}
         <img
           src={HERO_BG}
-          alt="Mountain silhouette at dusk — mission terrain backdrop"
+          alt="Three ANDY 8 drone nodes linked to a rugged ground-station laptop at dusk"
           className="absolute inset-0 w-full h-full object-cover object-center"
-          style={{ opacity: 0.35 }}
+          style={{ opacity: 0.48 }}
           loading="eager"
         />
         <div
@@ -112,12 +116,15 @@ export default function Home({ navOffset }: { navOffset: string }) {
               >
                 University Senior Project
               </p>
-              <h1
+              <motion.h1
                 className="text-8xl sm:text-9xl font-black tracking-tight leading-none mb-4"
                 style={{ color: "#F8FAFC" }}
+                initial={reduced ? false : { opacity: 0, y: 18 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.65 }}
               >
                 ANDY 8
-              </h1>
+              </motion.h1>
               <p className="text-xl sm:text-2xl font-semibold mb-5" style={{ color: "#70B7FF" }}>
                 Distributed Mesh Telemetry &amp; Node Hand-off
               </p>
@@ -137,7 +144,7 @@ export default function Home({ navOffset }: { navOffset: string }) {
                   View Architecture <span aria-hidden="true">→</span>
                 </Link>
                 <a
-                  href="https://github.com/drones-dev"
+                  href="https://github.com/Drones-dev/ANDY-8"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 px-6 py-3 rounded font-semibold text-sm transition-all border"
@@ -206,6 +213,9 @@ export default function Home({ navOffset }: { navOffset: string }) {
           </div>
         </div>
       </section>
+
+      <HowItWorks />
+      <DroneExplorer />
 
       {/* ── STATUS STRIP ── */}
       <div

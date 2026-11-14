@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 
 const links = [
@@ -14,6 +14,19 @@ const links = [
 export default function Nav() {
   const { pathname } = useLocation();
   const [open, setOpen] = useState(false);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const onKeyDown = (event: KeyboardEvent) => event.key === "Escape" && setOpen(false);
+    document.addEventListener("keydown", onKeyDown);
+    document.body.style.overflow = "hidden";
+    closeButtonRef.current?.focus();
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      document.body.style.overflow = "";
+    };
+  }, [open]);
 
   return (
     <>
@@ -107,7 +120,7 @@ export default function Nav() {
               Fall 2026 Senior Project
             </span>
             <a
-              href="https://github.com/drones-dev"
+              href="https://github.com/Drones-dev/ANDY-8"
               target="_blank"
               rel="noopener noreferrer"
               className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded text-sm font-medium transition-all border"
@@ -165,6 +178,7 @@ export default function Nav() {
                 ANDY 8
               </span>
               <button
+                ref={closeButtonRef}
                 className="w-11 h-11 flex items-center justify-center"
                 style={{ color: "#A9B8CA" }}
                 onClick={() => setOpen(false)}
@@ -196,7 +210,7 @@ export default function Nav() {
                 );
               })}
               <a
-                href="https://github.com/drones-dev"
+                href="https://github.com/Drones-dev/ANDY-8"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 px-3 py-3 rounded text-sm font-medium mt-4 border"

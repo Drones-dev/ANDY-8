@@ -26,7 +26,7 @@ export default function Footer() {
               CS 4850 Senior Project · Fall 2026
             </p>
             <a
-              href="https://github.com/drones-dev"
+              href="https://github.com/Drones-dev/ANDY-8"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 mt-4 text-sm transition-colors"

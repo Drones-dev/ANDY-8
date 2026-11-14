@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type KeyboardEvent } from "react";
 
 type Doc = {
   title: string;
@@ -8,6 +8,8 @@ type Doc = {
   category: string;
   size: string;
 };
+
+const REPOSITORY_URL = "https://github.com/Drones-dev/ANDY-8";
 
 const docs: Doc[] = [
   // Planning
@@ -89,7 +91,7 @@ const docs: Doc[] = [
   },
   {
     title: "Trial Results",
-    desc: "Detailed results for all 10 controlled relay-failure trials with packet delivery and recovery metrics.",
+    desc: "Reserved for measured physical-trial results. The dashboard currently contains clearly labeled simulation runs only.",
     type: "XLSX",
     updated: "Nov 14, 2026",
     category: "Testing",
@@ -139,7 +141,7 @@ const docs: Doc[] = [
   },
   {
     title: "GitHub Repository",
-    desc: "Full source code, firmware, test scripts, Docker configuration and build documentation.",
+    desc: "Published website source, test suite, deployment workflow and project implementation files.",
     type: "REPO",
     updated: "Dec 5, 2026",
     category: "Final Delivery",
@@ -166,6 +168,18 @@ const typeColors: Record<string, string> = {
 
 export default function Documentation({ navOffset }: { navOffset: string }) {
   const [activeCategory, setActiveCategory] = useState("All");
+  const moveCategory = (event: KeyboardEvent, index: number) => {
+    if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
+    event.preventDefault();
+    const next =
+      event.key === "Home"
+        ? 0
+        : event.key === "End"
+          ? categories.length - 1
+          : (index + (event.key === "ArrowRight" ? 1 : -1) + categories.length) % categories.length;
+    setActiveCategory(categories[next]);
+    document.getElementById(`doc-tab-${next}`)?.focus();
+  };
 
   const filtered = activeCategory === "All" ? docs : docs.filter((d) => d.category === activeCategory);
 
@@ -189,17 +203,24 @@ export default function Documentation({ navOffset }: { navOffset: string }) {
           <p className="text-base" style={{ color: "#A9B8CA" }}>
             Planning, engineering, testing and final delivery documents — CS 4850 · Fall 2026
           </p>
+          <p className="text-xs mt-3 max-w-3xl" style={{ color: "#7F93AA" }}>
+            Only the source repository is currently available. Document cards are retained as the delivery checklist and
+            will activate after verified files are uploaded.
+          </p>
         </div>
 
         {/* Category filter */}
         <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex gap-1 overflow-x-auto pb-px" role="tablist" aria-label="Document category filter">
-            {categories.map((cat) => (
+            {categories.map((cat, index) => (
               <button
                 key={cat}
+                id={`doc-tab-${index}`}
                 role="tab"
                 aria-selected={activeCategory === cat}
                 onClick={() => setActiveCategory(cat)}
+                onKeyDown={(event) => moveCategory(event, index)}
+                tabIndex={activeCategory === cat ? 0 : -1}
                 className="px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors"
                 style={{
                   borderColor: activeCategory === cat ? "#2491FF" : "transparent",
@@ -247,11 +268,7 @@ export default function Documentation({ navOffset }: { navOffset: string }) {
 }
 
 function DocCard({ doc }: { doc: Doc }) {
-  const extension = doc.type === "REPO" ? "" : `.${doc.type.toLowerCase()}`;
-  const placeholderPath =
-    doc.type === "REPO"
-      ? "https://github.com/drones-dev"
-      : `./documents/${doc.title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}${extension}`;
+  const available = doc.type === "REPO";
   return (
     <div
       className="rounded-xl border p-4 flex flex-col gap-3 transition-all group"
@@ -276,7 +293,7 @@ function DocCard({ doc }: { doc: Doc }) {
           {doc.type}
         </span>
         <span className="text-[10px] font-mono" style={{ color: "rgba(169,184,202,0.5)" }}>
-          {doc.size}
+          {available ? "AVAILABLE" : "AWAITING UPLOAD"}
         </span>
       </div>
 
@@ -294,21 +311,23 @@ function DocCard({ doc }: { doc: Doc }) {
         style={{ borderColor: "rgba(148,163,184,0.08)" }}
       >
         <span className="text-[10px] font-mono" style={{ color: "rgba(169,184,202,0.5)" }}>
-          {doc.updated}
+          {available ? "Current source" : "Not yet published"}
         </span>
-        <a
-          href={placeholderPath}
-          target={doc.type === "REPO" ? "_blank" : undefined}
-          rel={doc.type === "REPO" ? "noopener noreferrer" : undefined}
-          download={doc.type === "REPO" ? undefined : true}
-          className="text-xs font-mono transition-colors flex items-center gap-1"
-          style={{ color: "#2491FF" }}
-          onMouseEnter={(e) => (e.currentTarget.style.color = "#70B7FF")}
-          onMouseLeave={(e) => (e.currentTarget.style.color = "#2491FF")}
-          aria-label={`${doc.type === "REPO" ? "View" : "Download"} ${doc.title} (placeholder link)`}
-        >
-          {doc.type === "REPO" ? "View →" : "Download ↓"}
-        </a>
+        {available ? (
+          <a
+            href={REPOSITORY_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs font-mono text-[#2491FF] hover:text-[#70B7FF]"
+            aria-label={`View ${doc.title}`}
+          >
+            View →
+          </a>
+        ) : (
+          <span className="text-xs font-mono text-[#7F93AA]" aria-label={`${doc.title} is not yet available`}>
+            Coming soon
+          </span>
+        )}
       </div>
     </div>
   );
