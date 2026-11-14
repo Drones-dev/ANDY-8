@@ -6,7 +6,11 @@ describe("Documentation availability", () => {
   it("does not expose broken download links for missing files", () => {
     render(<Documentation navOffset="" />);
     expect(screen.getAllByText("Coming soon").length).toBeGreaterThan(0);
-    expect(screen.queryByText("Download ↓")).not.toBeInTheDocument();
+    expect(screen.getAllByText("Download ↓")).toHaveLength(2);
+    expect(screen.getByRole("link", { name: "View Prototype Presentation" })).toHaveAttribute(
+      "href",
+      "/documents/ANDY8_Mesh_Telemetry_Deck.pptx",
+    );
     expect(screen.getByRole("link", { name: "View GitHub Repository" })).toHaveAttribute(
       "href",
       "https://github.com/Drones-dev/ANDY-8",

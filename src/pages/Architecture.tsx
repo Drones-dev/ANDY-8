@@ -1,10 +1,11 @@
 import { useState, type KeyboardEvent } from "react";
+import SimulatorPipeline, { RoutingDecisions } from "../components/SimulatorPipeline";
 
 const DRONE_A = "https://images.unsplash.com/photo-1621506683092-a4a47fc01dbd?w=260&h=160&fit=crop&auto=format&q=80";
 const DRONE_B = "https://images.unsplash.com/photo-1679136578198-539e835445be?w=260&h=160&fit=crop&auto=format&q=80";
 const DRONE_C = "https://images.unsplash.com/photo-1761893425281-09ad46325079?w=260&h=160&fit=crop&auto=format&q=80";
 
-const tabs = ["Network Topology", "Hardware Stack", "Message Flow", "Failure Recovery", "Security"];
+const tabs = ["Network Topology", "Hardware Stack", "Message Flow", "Failure Recovery", "Integrity & Security Roadmap"];
 
 const techCards = [
   { name: "MicroAir743v2", role: "PX4 flight controller", icon: "△", color: "#2491FF" },
@@ -312,6 +313,8 @@ export default function Architecture({ navOffset }: { navOffset: string }) {
         {/* ── TAB 2: Message Flow ── */}
         {activeTab === 2 && (
           <div id="tab-panel-2" role="tabpanel" aria-labelledby="tab-2">
+            <SimulatorPipeline />
+            <RoutingDecisions />
             <h2 className="text-xl font-bold mb-6" style={{ color: "#F8FAFC" }}>
               Message Flow Timeline
             </h2>
@@ -372,7 +375,7 @@ export default function Architecture({ navOffset }: { navOffset: string }) {
                   phase: "Detection",
                   color: "#F59E0B",
                   items: [
-                    "Three consecutive PING replies missed",
+                    "Five seconds without a HELLO heartbeat",
                     "Neighbor table entry invalidated",
                     "Route marked unavailable",
                     "Alert flagged for ground station",
@@ -434,12 +437,19 @@ export default function Architecture({ navOffset }: { navOffset: string }) {
           </div>
         )}
 
-        {/* ── TAB 4: Security ── */}
+        {/* ── TAB 4: Integrity and security roadmap ── */}
         {activeTab === 4 && (
           <div id="tab-panel-4" role="tabpanel" aria-labelledby="tab-4">
             <h2 className="text-xl font-bold mb-6" style={{ color: "#F8FAFC" }}>
-              Security Model
+              Packet Integrity and Security Roadmap
             </h2>
+            <div className="mb-5 max-w-3xl rounded-xl border border-[#F59E0B]/35 bg-[#F59E0B]/[0.07] p-4">
+              <p className="text-sm font-semibold text-[#F59E0B]">Current prototype limitation</p>
+              <p className="mt-1 text-sm leading-relaxed text-[#A9B8CA]">
+                Packets are not encrypted or authenticated. CRC and sequence checks detect corruption and duplicates,
+                but they do not prevent an untrusted node from reading or injecting traffic.
+              </p>
+            </div>
             <div className="grid sm:grid-cols-2 gap-4 max-w-3xl">
               {[
                 {
@@ -458,6 +468,10 @@ export default function Architecture({ navOffset }: { navOffset: string }) {
                   title: "Flight-Control Separation",
                   desc: "PX4 remains responsible for flight behavior while the mesh node transports telemetry and route state.",
                 },
+                {
+                  title: "Planned: Encryption & Authentication",
+                  desc: "Add trusted-node admission, encrypted payloads, and message authentication before operational deployment.",
+                },
               ].map(({ title, desc }) => (
                 <div
                   key={title}
@@ -465,7 +479,10 @@ export default function Architecture({ navOffset }: { navOffset: string }) {
                   style={{ backgroundColor: "#0B1B30", borderColor: "rgba(148,163,184,0.12)" }}
                 >
                   <div className="flex items-center gap-2 mb-3">
-                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: "#22C55E" }} />
+                    <div
+                      className="w-2 h-2 rounded-full"
+                      style={{ backgroundColor: title.startsWith("Planned") ? "#F59E0B" : "#22C55E" }}
+                    />
                     <p className="text-sm font-semibold" style={{ color: "#F8FAFC" }}>
                       {title}
                     </p>
@@ -475,6 +492,35 @@ export default function Architecture({ navOffset }: { navOffset: string }) {
                   </p>
                 </div>
               ))}
+            </div>
+            <div className="mt-8 max-w-5xl">
+              <h3 className="text-lg font-bold text-[#F8FAFC]">Current tradeoffs</h3>
+              <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {[
+                  ["Packets can be lost", "Frames sent to a dead relay before timeout are not acknowledged or resent."],
+                  [
+                    "Delay grows per hop",
+                    "A 45-byte SF7 packet takes about 0.12 seconds on air, so three hops take about 0.36 seconds.",
+                  ],
+                  [
+                    "One shared channel",
+                    "Every node uses the same channel, which creates collision risk as the network grows.",
+                  ],
+                  [
+                    "The anchor is a weak point",
+                    "In the current line topology, losing Drone 1 separates the forward nodes from the ground station.",
+                  ],
+                  [
+                    "Relays use flight energy",
+                    "Drone 2 must remain in range of both neighbors and spends battery forwarding traffic.",
+                  ],
+                ].map(([title, text]) => (
+                  <article key={title} className="rounded-xl border border-white/10 bg-[#0B1B30] p-4">
+                    <h4 className="text-sm font-semibold text-[#F8FAFC]">{title}</h4>
+                    <p className="mt-2 text-xs leading-relaxed text-[#A9B8CA]">{text}</p>
+                  </article>
+                ))}
+              </div>
             </div>
           </div>
         )}

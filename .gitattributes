@@ -152,3 +152,5 @@
 *.png                -filter -diff -merge -text
 *.jpg                -filter -diff -merge -text
 *.jpeg               -filter -diff -merge -text
+public/documents/*.pdf  -filter -diff -merge -text
+public/documents/*.pptx -filter -diff -merge -text

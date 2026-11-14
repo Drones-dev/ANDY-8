@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Download, RadioTower, RotateCcw } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from "recharts";
+import ScenarioLab from "../components/ScenarioLab";
 
 const sidebarLinks = [
   { id: "overview", label: "Overview" },
@@ -78,7 +79,7 @@ const metricStates = {
   ],
   failure: [
     { label: "Packet Delivery", value: "94%", sub: "Simulated failure run", color: "#F59E0B" },
-    { label: "Recovery", value: "1.8s", sub: "Illustrative output", color: "#22C55E" },
+    { label: "Recovery", value: "≈4s", sub: "Verified simulation result", color: "#22C55E" },
     { label: "Simulation Run", value: "Failure", sub: "D2 dropout injected", color: "#EF4444" },
     { label: "Route State", value: "Recovered", sub: "Alternate path selected", color: "#22C55E" },
     { label: "Median Latency", value: "47 ms", sub: "Illustrative output", color: "#70B7FF" },
@@ -99,7 +100,8 @@ const failurePdrData = [
   { t: "4:12", pdr: 72 },
   { t: "4:13", pdr: 41 },
   { t: "4:14", pdr: 18 },
-  { t: "4:15", pdr: 88 },
+  { t: "4:15", pdr: 66 },
+  { t: "4:16", pdr: 88 },
   { t: "4:18", pdr: 94 },
   { t: "4:30", pdr: 96 },
   { t: "5:00", pdr: 97 },
@@ -113,8 +115,8 @@ const recoveryEvents = [
   { time: "00:04:12", event: "Relay node stopped responding", type: "FAILURE" as const },
   { time: "00:04:13", event: "Failed route invalidated", type: "WARNING" as const },
   { time: "00:04:14", event: "Alternate route selected (D3→D1→GS)", type: "INFO" as const },
-  { time: "00:04:15", event: "Telemetry stream restored", type: "RECOVERY" as const },
-  { time: "00:04:18", event: "System stable — recovery time: 1.8s", type: "INFO" as const },
+  { time: "00:04:16", event: "First packet delivered on alternate path", type: "RECOVERY" as const },
+  { time: "00:04:18", event: "System stable — reroute time: approximately 4s", type: "INFO" as const },
 ];
 
 const nominalEvents = [
@@ -134,10 +136,10 @@ const eventLog = [
   },
   {
     id: "E002",
-    time: "06:04:15",
+    time: "06:04:16",
     node: "D3",
     type: "RECOVERY" as const,
-    message: "Telemetry stream restored via alternate route",
+    message: "First packet received via alternate route",
   },
   { id: "E003", time: "06:04:14", node: "GS", type: "INFO" as const, message: "Alternate route D3→D1→GS committed" },
   { id: "E004", time: "06:04:13", node: "D3", type: "WARNING" as const, message: "Primary route D3→D2→D1 expired" },
@@ -411,6 +413,7 @@ export default function Dashboard({ navOffset }: { navOffset: string }) {
         )}
 
         <div className="p-4 sm:p-6">
+          <ScenarioLab />
           <section
             className="mb-6 rounded-xl border p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
             style={{
@@ -598,7 +601,7 @@ export default function Dashboard({ navOffset }: { navOffset: string }) {
                 role="img"
                 aria-label={
                   scenario === "failure"
-                    ? "Simulated packet delivery falls during a relay failure at four minutes twelve seconds and recovers by four minutes fifteen seconds."
+                    ? "Simulated packet delivery falls during a relay failure at four minutes twelve seconds and recovers by four minutes sixteen seconds."
                     : "Simulated packet delivery remains between ninety-five and ninety-eight percent throughout the nominal run."
                 }
               >
@@ -630,7 +633,7 @@ export default function Dashboard({ navOffset }: { navOffset: string }) {
                     )}
                     {scenario === "failure" && (
                       <ReferenceLine
-                        x="4:15"
+                        x="4:16"
                         stroke="#22C55E"
                         strokeDasharray="4 2"
                         label={{ value: "Recovery", fill: "#22C55E", fontSize: 9 }}

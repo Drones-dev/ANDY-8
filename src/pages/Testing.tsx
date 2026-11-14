@@ -1,510 +1,216 @@
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Legend,
-  RadarChart,
-  PolarGrid,
-  PolarAngleAxis,
-  Radar,
-} from "recharts";
+import { CheckCircle2, CircleDashed, FlaskConical, Radio, ShieldAlert } from "lucide-react";
 
-const testStages = [
+const verifiedMetrics = [
+  { value: "3 / 3", label: "Test suites pass", note: "Protocol, simulated radio, and routing" },
+  { value: "≈4 s", label: "Simulated reroute", note: "Relay loss to first packet on the new path" },
+  { value: "3", label: "Maximum hops shown", note: "Drone 3 through Drone 2 and Drone 1" },
+  { value: "9%", label: "ESP32-S3 flash", note: "323 KB across the firmware build" },
+];
+
+const stages = [
   {
-    id: 1,
-    name: "Unit Testing",
-    status: "In Progress",
-    color: "#2491FF",
-    desc: "Individual module validation — routing logic, heartbeat timing, CRC checks, TTL handling, and duplicate prevention.",
+    name: "Unit tests",
+    status: "Verified",
+    detail: "Packet protocol, simulated radio, routing, loop protection, and duplicate filtering.",
+    icon: CheckCircle2,
   },
   {
-    id: 2,
-    name: "Software Simulation",
-    status: "In Progress",
-    color: "#2491FF",
-    desc: "Simulated network with configurable failure injection and timing parameters.",
+    name: "PX4 simulation",
+    status: "Verified",
+    detail: "Three PX4 SITL aircraft provide MAVLink telemetry to the four-node mesh simulator.",
+    icon: CheckCircle2,
   },
   {
-    id: 3,
-    name: "Stationary Physical Nodes",
-    status: "Pending",
-    color: "#F59E0B",
-    desc: "Bench test with physical hardware, no flight. Validates real-world radio performance.",
+    name: "Radio bench test",
+    status: "Verified",
+    detail: "ESP32-S3 and SX1262 boards exchange packets in a stationary ping-pong test.",
+    icon: Radio,
   },
   {
-    id: 4,
-    name: "One-Drone Integration",
-    status: "Pending",
-    color: "#A9B8CA",
-    desc: "Single airborne node with ground station. Confirms PX4/MAVLink integration.",
+    name: "Stationary physical mesh",
+    status: "Next",
+    detail: "Validate multiple real nodes, fading links, and failure timing without flight.",
+    icon: CircleDashed,
   },
   {
-    id: 5,
-    name: "Two-Drone Integration",
-    status: "Pending",
-    color: "#A9B8CA",
-    desc: "Two-node flight test. Confirms relay behavior and link-quality measurement.",
+    name: "Incremental flight test",
+    status: "Next",
+    detail: "Test one aircraft, then the relay pair, before the complete formation.",
+    icon: CircleDashed,
   },
   {
-    id: 6,
-    name: "Three-Drone Validation",
-    status: "Pending",
-    color: "#A9B8CA",
-    desc: "Full system validation with controlled obstacle and relay failure trials.",
+    name: "Three-drone validation",
+    status: "Planned",
+    detail: "Measure delivery, latency, and recovery with a controlled obstacle and relay shutdown.",
+    icon: CircleDashed,
   },
 ];
 
-const pdrChartData = [
-  { trial: "T01", target: 95, actual: 96 },
-  { trial: "T02", target: 95, actual: 94 },
-  { trial: "T03", target: 95, actual: 97 },
-  { trial: "T04", target: 95, actual: 93 },
-  { trial: "T05", target: 95, actual: 98 },
-  { trial: "T06", target: 95, actual: 95 },
-  { trial: "T07", target: 95, actual: 96 },
-  { trial: "T08", target: 95, actual: 91 },
-  { trial: "T09", target: 95, actual: 95 },
-  { trial: "T10", target: 95, actual: 97 },
+const definitions = [
+  {
+    term: "Reroute time",
+    meaning: "Seconds from the relay shutdown to the first packet delivered on the alternate path.",
+  },
+  {
+    term: "Detection time",
+    meaning:
+      "Time between the last heartbeat and the node being marked lost. The prototype uses a five-second silence threshold.",
+  },
+  {
+    term: "Packet loss",
+    meaning: "The share of telemetry frames that do not reach the ground station during the hand-off.",
+  },
+  { term: "End-to-end latency", meaning: "Delay from Drone 3 creating a packet to the ground station receiving it." },
+  { term: "Delivery ratio", meaning: "The share of Drone 3 packets that arrive at the ground station during a run." },
 ];
 
-const recoveryChartData = [
-  { trial: "T01", target: 3, actual: 1.9 },
-  { trial: "T02", target: 3, actual: 2.1 },
-  { trial: "T03", target: 3, actual: 1.7 },
-  { trial: "T04", target: 3, actual: 3.4 },
-  { trial: "T05", target: 3, actual: 1.8 },
-  { trial: "T06", target: 3, actual: 2.3 },
-  { trial: "T07", target: 3, actual: 1.6 },
-  { trial: "T08", target: 3, actual: 2.9 },
-  { trial: "T09", target: 3, actual: 1.8 },
-  { trial: "T10", target: 3, actual: 2.2 },
+const scenarios = [
+  ["Nominal multi-hop route", "Verified in simulation", "D3 → D2 → D1 → ground station"],
+  ["Relay failure", "Verified in simulation", "Power off D2 and measure the alternate path"],
+  ["Fading link", "Planned", "Reduce signal gradually instead of an instant cutoff"],
+  ["Anchor failure", "Planned", "Remove D1 and confirm the network split is reported"],
+  ["Two simultaneous failures", "Planned", "Measure whether any viable route remains"],
+  ["Moving ground station", "Planned", "Recalculate routes as the destination changes position"],
+  ["More than three drones", "Planned", "Observe channel loading and route choice at a larger scale"],
 ];
-
-const radarData = [
-  { metric: "PDR", target: 95, actual: 95.2 },
-  { metric: "Recovery", target: 100, actual: 80 },
-  { metric: "Latency", target: 85, actual: 88 },
-  { metric: "Link Quality", target: 90, actual: 87 },
-  { metric: "Battery", target: 75, actual: 70 },
-  { metric: "Trial Success", target: 100, actual: 90 },
-];
-
-const trials = [
-  {
-    id: "T01",
-    date: "2026-11-08",
-    route: "D3→D2→D1",
-    failTime: "00:02:14",
-    recovTime: "1.9s",
-    lost: 3,
-    status: "Pass",
-  },
-  {
-    id: "T02",
-    date: "2026-11-08",
-    route: "D3→D2→D1",
-    failTime: "00:03:01",
-    recovTime: "2.1s",
-    lost: 5,
-    status: "Pass",
-  },
-  {
-    id: "T03",
-    date: "2026-11-09",
-    route: "D3→D2→D1",
-    failTime: "00:01:45",
-    recovTime: "1.7s",
-    lost: 2,
-    status: "Pass",
-  },
-  {
-    id: "T04",
-    date: "2026-11-09",
-    route: "D3→D2→D1",
-    failTime: "00:04:33",
-    recovTime: "3.4s",
-    lost: 18,
-    status: "Fail",
-  },
-  {
-    id: "T05",
-    date: "2026-11-10",
-    route: "D3→D2→D1",
-    failTime: "00:02:58",
-    recovTime: "1.8s",
-    lost: 4,
-    status: "Pass",
-  },
-  {
-    id: "T06",
-    date: "2026-11-10",
-    route: "D3→D2→D1",
-    failTime: "00:03:22",
-    recovTime: "2.3s",
-    lost: 6,
-    status: "Pass",
-  },
-  {
-    id: "T07",
-    date: "2026-11-12",
-    route: "D3→D2→D1",
-    failTime: "00:01:55",
-    recovTime: "1.6s",
-    lost: 2,
-    status: "Pass",
-  },
-  {
-    id: "T08",
-    date: "2026-11-12",
-    route: "D3→D2→D1",
-    failTime: "00:03:47",
-    recovTime: "2.9s",
-    lost: 9,
-    status: "Pass",
-  },
-  {
-    id: "T09",
-    date: "2026-11-13",
-    route: "D3→D2→D1",
-    failTime: "00:04:12",
-    recovTime: "1.8s",
-    lost: 7,
-    status: "Pass",
-  },
-  {
-    id: "T10",
-    date: "2026-11-14",
-    route: "D3→D2→D1",
-    failTime: "00:02:36",
-    recovTime: "2.2s",
-    lost: 4,
-    status: "Pass",
-  },
-];
-
-const ttStyle = {
-  contentStyle: { backgroundColor: "#102640", border: "1px solid rgba(148,163,184,0.2)", borderRadius: 8 },
-  labelStyle: { color: "#A9B8CA", fontSize: 11, fontFamily: "JetBrains Mono" },
-  itemStyle: { fontSize: 11 },
-};
 
 export default function Testing({ navOffset }: { navOffset: string }) {
   return (
     <div className={`min-h-screen ${navOffset}`} style={{ backgroundColor: "#061426" }}>
-      {/* Header */}
-      <div className="border-b bg-grid" style={{ backgroundColor: "#0B1B30", borderColor: "rgba(148,163,184,0.12)" }}>
-        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <p className="text-xs font-mono uppercase tracking-widest mb-3" style={{ color: "#70B7FF" }}>
-            Validation
+      <header
+        className="border-b bg-grid"
+        style={{ backgroundColor: "#0B1B30", borderColor: "rgba(148,163,184,0.12)" }}
+      >
+        <div className="mx-auto max-w-[1440px] px-4 py-12 sm:px-6 lg:px-8">
+          <p className="mb-3 text-xs font-mono uppercase tracking-widest text-[#70B7FF]">Validation</p>
+          <h1 className="mb-3 text-3xl font-bold text-[#F8FAFC] sm:text-4xl">Testing and Results</h1>
+          <p className="max-w-3xl text-base leading-relaxed text-[#A9B8CA]">
+            Verified software and bench-test evidence from the November 2026 prototype, separated from the physical
+            flight work that remains.
           </p>
-          <h1 className="text-3xl sm:text-4xl font-bold mb-3" style={{ color: "#F8FAFC" }}>
-            Testing and Validation
-          </h1>
-          <p className="text-base" style={{ color: "#A9B8CA" }}>
-            Six-stage test progression from unit tests to three-drone validation
-          </p>
-          <div
-            className="inline-block mt-4 px-3 py-1.5 rounded border text-xs font-mono"
-            style={{ borderColor: "rgba(245,158,11,0.3)", color: "#F59E0B", backgroundColor: "rgba(245,158,11,0.06)" }}
-          >
-            Simulation only · No physical-trial results are published yet
+          <div className="mt-5 inline-flex items-center gap-2 rounded border border-[#F59E0B]/35 bg-[#F59E0B]/[0.07] px-3 py-2 text-xs text-[#F59E0B]">
+            <ShieldAlert size={14} aria-hidden="true" /> No complete three-drone field trial has been claimed.
           </div>
         </div>
-      </div>
+      </header>
 
-      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        {/* Initial targets */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-10">
-          {[
-            { label: "Packet Delivery Target", value: "≥ 95%", actual: "Pending measurement" },
-            { label: "Recovery Time Target", value: "≤ 3.0s", actual: "Pending measurement" },
-            { label: "Controlled Trials", value: "≥ 10", actual: "Planned" },
-            { label: "Failure Detection Target", value: "≤ 5.0s", actual: "Pending measurement" },
-          ].map(({ label, value, actual }) => (
-            <div
-              key={label}
-              className="rounded-xl border p-4"
-              style={{ backgroundColor: "#0B1B30", borderColor: "rgba(245,158,11,0.2)" }}
-            >
-              <p className="text-[10px] font-mono uppercase tracking-widest mb-2" style={{ color: "#A9B8CA" }}>
-                {label}
-              </p>
-              <p className="text-lg font-bold font-mono mb-1" style={{ color: "#F8FAFC" }}>
-                {value}
-              </p>
-              <div className="flex items-center gap-1.5">
-                <div className="w-2 h-2 rounded-full" style={{ backgroundColor: "#F59E0B" }} />
-                <p className="text-xs font-mono" style={{ color: "#F59E0B" }}>
-                  {actual}
-                </p>
-              </div>
+      <main className="mx-auto max-w-[1440px] px-4 py-10 sm:px-6 lg:px-8">
+        <section aria-labelledby="verified-results">
+          <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
+            <div>
+              <p className="text-[10px] font-mono uppercase tracking-widest text-[#22C55E]">Prototype evidence</p>
+              <h2 id="verified-results" className="mt-2 text-xl font-bold text-[#F8FAFC]">
+                Verified results
+              </h2>
             </div>
-          ))}
-        </div>
+            <p className="text-xs text-[#7F93AA]">Source: prototype presentation, November 10, 2026</p>
+          </div>
+          <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {verifiedMetrics.map((metric) => (
+              <article key={metric.label} className="rounded-xl border border-white/10 bg-[#0B1B30] p-5">
+                <p className="font-mono text-3xl font-bold text-[#F8FAFC]">{metric.value}</p>
+                <h3 className="mt-3 text-sm font-semibold text-[#70B7FF]">{metric.label}</h3>
+                <p className="mt-2 text-xs leading-relaxed text-[#A9B8CA]">{metric.note}</p>
+              </article>
+            ))}
+          </div>
+        </section>
 
-        {/* Test stages */}
-        <h2 className="text-lg font-bold mb-4" style={{ color: "#F8FAFC" }}>
-          Test Stages
-        </h2>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-10">
-          {testStages.map(({ id, name, status, color, desc }) => (
-            <div
-              key={id}
-              className="rounded-xl border p-4"
-              style={{ backgroundColor: "#0B1B30", borderColor: "rgba(148,163,184,0.12)" }}
-            >
-              <div className="flex items-center gap-3 mb-3">
-                <div
-                  className="w-7 h-7 rounded flex items-center justify-center text-xs font-mono font-bold"
-                  style={{ backgroundColor: `${color}18`, color }}
+        <section className="mt-12" aria-labelledby="test-stages">
+          <p className="text-[10px] font-mono uppercase tracking-widest text-[#70B7FF]">Evidence ladder</p>
+          <h2 id="test-stages" className="mt-2 text-xl font-bold text-[#F8FAFC]">
+            Test stages
+          </h2>
+          <div className="mt-5 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {stages.map(({ name, status, detail, icon: Icon }) => {
+              const done = status === "Verified";
+              return (
+                <article
+                  key={name}
+                  className="rounded-xl border p-5"
+                  style={{
+                    backgroundColor: "#0B1B30",
+                    borderColor: done ? "rgba(34,197,94,.3)" : "rgba(148,163,184,.12)",
+                  }}
                 >
-                  {id}
-                </div>
-                <p className="text-sm font-semibold" style={{ color: "#F8FAFC" }}>
-                  {name}
-                </p>
-              </div>
-              <p className="text-xs leading-relaxed mb-3" style={{ color: "#A9B8CA" }}>
-                {desc}
-              </p>
-              <span
-                className="text-[10px] font-mono px-2 py-0.5 rounded"
-                style={{ backgroundColor: `${color}18`, color }}
-              >
-                {status.toUpperCase()}
-              </span>
-            </div>
-          ))}
-        </div>
-
-        {/* Charts */}
-        <div className="grid lg:grid-cols-2 gap-6 mb-10">
-          {/* PDR chart */}
-          <div
-            className="rounded-xl border p-5"
-            style={{ backgroundColor: "#0B1B30", borderColor: "rgba(148,163,184,0.12)" }}
-          >
-            <h3 className="text-sm font-semibold mb-4" style={{ color: "#F8FAFC" }}>
-              Simulated Packet Delivery Rate per Run
-            </h3>
-            <div className="h-56">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={pdrChartData} margin={{ top: 4, right: 8, bottom: 0, left: -12 }}>
-                  <CartesianGrid stroke="rgba(148,163,184,0.08)" />
-                  <XAxis dataKey="trial" tick={{ fill: "#A9B8CA", fontSize: 10, fontFamily: "JetBrains Mono" }} />
-                  <YAxis
-                    domain={[80, 100]}
-                    tick={{ fill: "#A9B8CA", fontSize: 10, fontFamily: "JetBrains Mono" }}
-                    unit="%"
-                  />
-                  <Tooltip {...ttStyle} />
-                  <Legend wrapperStyle={{ fontSize: 11, color: "#A9B8CA" }} />
-                  <Bar
-                    dataKey="target"
-                    name="Target (95%)"
-                    fill="rgba(36,145,255,0.25)"
-                    stroke="#2491FF"
-                    strokeWidth={1}
-                  />
-                  <Bar dataKey="actual" name="Simulated" fill="#22C55E" radius={[2, 2, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-
-          {/* Recovery time chart */}
-          <div
-            className="rounded-xl border p-5"
-            style={{ backgroundColor: "#0B1B30", borderColor: "rgba(148,163,184,0.12)" }}
-          >
-            <h3 className="text-sm font-semibold mb-4" style={{ color: "#F8FAFC" }}>
-              Simulated Route Recovery Time per Run
-            </h3>
-            <div className="h-56">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={recoveryChartData} margin={{ top: 4, right: 8, bottom: 0, left: -12 }}>
-                  <CartesianGrid stroke="rgba(148,163,184,0.08)" />
-                  <XAxis dataKey="trial" tick={{ fill: "#A9B8CA", fontSize: 10, fontFamily: "JetBrains Mono" }} />
-                  <YAxis
-                    domain={[0, 5]}
-                    tick={{ fill: "#A9B8CA", fontSize: 10, fontFamily: "JetBrains Mono" }}
-                    unit="s"
-                  />
-                  <Tooltip {...ttStyle} />
-                  <Legend wrapperStyle={{ fontSize: 11, color: "#A9B8CA" }} />
-                  <Bar
-                    dataKey="target"
-                    name="Target (<3s)"
-                    fill="rgba(245,158,11,0.2)"
-                    stroke="#F59E0B"
-                    strokeWidth={1}
-                  />
-                  <Bar dataKey="actual" name="Simulated" fill="#2491FF" radius={[2, 2, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-
-          {/* Radar */}
-          <div
-            className="rounded-xl border p-5"
-            style={{ backgroundColor: "#0B1B30", borderColor: "rgba(148,163,184,0.12)" }}
-          >
-            <h3 className="text-sm font-semibold mb-4" style={{ color: "#F8FAFC" }}>
-              Performance Profile (Targets vs. Illustrative)
-            </h3>
-            <div className="h-56">
-              <ResponsiveContainer width="100%" height="100%">
-                <RadarChart data={radarData}>
-                  <PolarGrid stroke="rgba(148,163,184,0.15)" />
-                  <PolarAngleAxis
-                    dataKey="metric"
-                    tick={{ fill: "#A9B8CA", fontSize: 10, fontFamily: "JetBrains Mono" }}
-                  />
-                  <Radar
-                    name="Target"
-                    dataKey="target"
-                    stroke="#2491FF"
-                    fill="#2491FF"
-                    fillOpacity={0.1}
-                    strokeDasharray="4 2"
-                  />
-                  <Radar name="Simulated" dataKey="actual" stroke="#22C55E" fill="#22C55E" fillOpacity={0.2} />
-                  <Legend wrapperStyle={{ fontSize: 11, color: "#A9B8CA" }} />
-                  <Tooltip {...ttStyle} />
-                </RadarChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-
-          {/* Trial success summary */}
-          <div
-            className="rounded-xl border p-5"
-            style={{ backgroundColor: "#0B1B30", borderColor: "rgba(148,163,184,0.12)" }}
-          >
-            <h3 className="text-sm font-semibold mb-4" style={{ color: "#F8FAFC" }}>
-              Simulation Run Outcomes
-            </h3>
-            <div className="space-y-3">
-              {[
-                { label: "Trials Passed", value: 9, total: 10, color: "#22C55E" },
-                { label: "Recovery &lt; 3s", value: 9, total: 10, color: "#2491FF" },
-                { label: "PDR ≥ 95%", value: 8, total: 10, color: "#70B7FF" },
-                { label: "Zero Safety Defects", value: 10, total: 10, color: "#22C55E" },
-              ].map(({ label, value, total, color }) => (
-                <div key={label}>
-                  <div className="flex justify-between mb-1">
+                  <div className="flex items-center justify-between">
+                    <Icon size={20} style={{ color: done ? "#22C55E" : "#F59E0B" }} aria-hidden="true" />
                     <span
-                      className="text-xs"
-                      style={{ color: "#A9B8CA" }}
-                      dangerouslySetInnerHTML={{ __html: label }}
-                    />
-                    <span className="text-xs font-mono font-bold" style={{ color }}>
-                      {value}/{total}
+                      className="text-[10px] font-mono uppercase tracking-wider"
+                      style={{ color: done ? "#22C55E" : "#F59E0B" }}
+                    >
+                      {status}
                     </span>
                   </div>
-                  <div
-                    className="h-1.5 rounded-full overflow-hidden"
-                    style={{ backgroundColor: "rgba(148,163,184,0.1)" }}
-                  >
-                    <div
-                      className="h-full rounded-full"
-                      style={{ width: `${(value / total) * 100}%`, backgroundColor: color }}
-                    />
-                  </div>
-                </div>
-              ))}
+                  <h3 className="mt-5 text-sm font-semibold text-[#F8FAFC]">{name}</h3>
+                  <p className="mt-2 text-xs leading-relaxed text-[#A9B8CA]">{detail}</p>
+                </article>
+              );
+            })}
+          </div>
+        </section>
+
+        <section className="mt-12 grid gap-8 lg:grid-cols-[.78fr_1.22fr]" aria-labelledby="metric-definitions">
+          <div>
+            <p className="text-[10px] font-mono uppercase tracking-widest text-[#70B7FF]">Measurement glossary</p>
+            <h2 id="metric-definitions" className="mt-2 text-xl font-bold text-[#F8FAFC]">
+              What each metric means
+            </h2>
+            <p className="mt-3 text-sm leading-relaxed text-[#A9B8CA]">
+              Using consistent definitions keeps simulated, bench, and field results comparable.
+            </p>
+          </div>
+          <dl className="divide-y divide-white/10 overflow-hidden rounded-xl border border-white/10 bg-[#0B1B30]">
+            {definitions.map(({ term, meaning }) => (
+              <div key={term} className="grid gap-2 p-4 sm:grid-cols-[150px_1fr]">
+                <dt className="text-sm font-semibold text-[#F8FAFC]">{term}</dt>
+                <dd className="text-sm leading-relaxed text-[#A9B8CA]">{meaning}</dd>
+              </div>
+            ))}
+          </dl>
+        </section>
+
+        <section className="mt-12" aria-labelledby="scenario-plan">
+          <div className="flex items-center gap-3">
+            <FlaskConical className="text-[#70B7FF]" size={22} aria-hidden="true" />
+            <h2 id="scenario-plan" className="text-xl font-bold text-[#F8FAFC]">
+              Scenario validation plan
+            </h2>
+          </div>
+          <div className="mt-5 overflow-hidden rounded-xl border border-white/10">
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[700px]">
+                <thead className="bg-[#0B1B30]">
+                  <tr>
+                    {["Scenario", "Evidence status", "Purpose"].map((label) => (
+                      <th
+                        key={label}
+                        className="px-4 py-3 text-left text-[10px] font-mono uppercase tracking-widest text-[#A9B8CA]"
+                      >
+                        {label}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {scenarios.map(([name, status, purpose]) => (
+                    <tr key={name} className="border-t border-white/10 bg-[#08182A]">
+                      <td className="px-4 py-3 text-sm font-medium text-[#F8FAFC]">{name}</td>
+                      <td
+                        className="px-4 py-3 text-xs font-mono"
+                        style={{ color: status.startsWith("Verified") ? "#22C55E" : "#F59E0B" }}
+                      >
+                        {status}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-[#A9B8CA]">{purpose}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
-        </div>
-
-        {/* Simulation results table */}
-        <h2 className="text-lg font-bold mb-4" style={{ color: "#F8FAFC" }}>
-          Simulation Evidence Matrix
-        </h2>
-        <div className="rounded-xl border overflow-hidden" style={{ borderColor: "rgba(148,163,184,0.12)" }}>
-          <div className="overflow-x-auto">
-            <table
-              className="w-full min-w-[700px]"
-              aria-label="Illustrative software simulation results; not physical trial evidence"
-            >
-              <thead>
-                <tr style={{ backgroundColor: "#0B1B30", borderBottom: "1px solid rgba(148,163,184,0.12)" }}>
-                  {[
-                    "Run ID",
-                    "Evidence Type",
-                    "Initial Route",
-                    "Failure Time",
-                    "Recovery Time",
-                    "Pkts Lost",
-                    "Status",
-                    "Evidence",
-                  ].map((h) => (
-                    <th
-                      key={h}
-                      className="text-left px-4 py-3 text-[10px] font-mono uppercase tracking-widest"
-                      style={{ color: "#A9B8CA" }}
-                    >
-                      {h}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {trials.map((t) => (
-                  <tr
-                    key={t.id}
-                    style={{ borderBottom: "1px solid rgba(148,163,184,0.06)", backgroundColor: "#061426" }}
-                  >
-                    <td className="px-4 py-3 text-xs font-mono font-bold" style={{ color: "#70B7FF" }}>
-                      {t.id}
-                    </td>
-                    <td className="px-4 py-3 text-xs font-mono" style={{ color: "#A9B8CA" }}>
-                      Software simulation
-                    </td>
-                    <td className="px-4 py-3 text-xs font-mono" style={{ color: "#F8FAFC" }}>
-                      {t.route}
-                    </td>
-                    <td className="px-4 py-3 text-xs font-mono" style={{ color: "#F8FAFC" }}>
-                      {t.failTime}
-                    </td>
-                    <td
-                      className="px-4 py-3 text-xs font-mono"
-                      style={{ color: t.recovTime > "3.0s" ? "#EF4444" : "#22C55E" }}
-                    >
-                      {t.recovTime}
-                    </td>
-                    <td className="px-4 py-3 text-xs font-mono" style={{ color: t.lost > 10 ? "#EF4444" : "#F8FAFC" }}>
-                      {t.lost}
-                    </td>
-                    <td className="px-4 py-3">
-                      <span
-                        className="text-[10px] font-mono px-1.5 py-0.5 rounded border"
-                        style={{
-                          color: t.status === "Pass" ? "#22C55E" : "#EF4444",
-                          borderColor: t.status === "Pass" ? "rgba(34,197,94,0.3)" : "rgba(239,68,68,0.3)",
-                          backgroundColor: t.status === "Pass" ? "rgba(34,197,94,0.08)" : "rgba(239,68,68,0.08)",
-                        }}
-                      >
-                        {t.status.toUpperCase()}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-xs" style={{ color: "#2491FF" }}>
-                      <button className="underline underline-offset-2" aria-label={`View evidence for trial ${t.id}`}>
-                        View Log
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
+        </section>
+      </main>
     </div>
   );
 }

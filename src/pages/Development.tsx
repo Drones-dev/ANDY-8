@@ -33,27 +33,26 @@ const phases = [
     name: "Development",
     status: "In Progress",
     color: "#2491FF",
-    pct: 55,
+    pct: 85,
     planned: 200,
-    completed: ["Dashboard frontend", "Architecture and route-state simulation", "GitHub Pages deployment"],
-    remaining: [
-      "Node firmware implementation",
-      "Mesh routing algorithm",
-      "Ground-station backend",
-      "Ground-station integration",
-      "Physical node integration",
-    ],
+    completed: ["Mesh routing classes", "PX4 SITL integration", "Dashboard frontend", "GitHub Pages deployment"],
+    remaining: ["Ground-station integration", "Physical node integration"],
     deliverables: ["Integrated Prototype", "Source Repository", "Configuration Guide"],
     months: ["Oct", "Nov"],
   },
   {
     id: 4,
     name: "Testing",
-    status: "Simulation",
+    status: "In Progress",
     color: "#F59E0B",
-    pct: 25,
+    pct: 55,
     planned: 120,
-    completed: ["Software simulation scenarios", "Dashboard test harness"],
+    completed: [
+      "3/3 unit test suites",
+      "PX4 multi-drone simulation",
+      "ESP32-S3/SX1262 radio bench test",
+      "Dashboard test harness",
+    ],
     remaining: [
       "Unit test suite",
       "Software simulation",
@@ -131,11 +130,11 @@ export default function Development({ navOffset }: { navOffset: string }) {
             Development Progress
           </h1>
           <p className="text-base" style={{ color: "#A9B8CA" }}>
-            Five-phase software development lifecycle — Fall 2026
+            Five-phase development lifecycle — Fall 2026
           </p>
           <p className="text-xs mt-3 max-w-3xl" style={{ color: "#7F93AA" }}>
-            Website progress estimate updated November 13, 2026. Confirm milestone completion and hours against the
-            team&apos;s official project tracker.
+            Hardware delivery moved development and testing into PX4 simulation first. The same mesh code is now moving
+            toward the physical drones.
           </p>
         </div>
       </div>
@@ -146,8 +145,8 @@ export default function Development({ navOffset }: { navOffset: string }) {
           {[
             { label: "Planned Tasks", value: "31" },
             { label: "Estimated Hours", value: "592" },
-            { label: "Schedule Status", value: "Team review needed" },
-            { label: "Current Phase", value: "Development + Simulation" },
+            { label: "Schedule Status", value: "Adapted for hardware delay" },
+            { label: "Current Phase", value: "Testing + Hardware Integration" },
           ].map(({ label, value }) => (
             <div
               key={label}

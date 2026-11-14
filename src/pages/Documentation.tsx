@@ -7,6 +7,7 @@ type Doc = {
   updated: string;
   category: string;
   size: string;
+  href?: string;
 };
 
 const REPOSITORY_URL = "https://github.com/Drones-dev/ANDY-8";
@@ -124,12 +125,22 @@ const docs: Doc[] = [
     size: "4.8 MB",
   },
   {
-    title: "Presentation Slides",
-    desc: "C-Day slide deck covering project goals, system demo, test results and lessons learned.",
+    title: "Prototype Presentation",
+    desc: "November prototype deck covering the mesh concept, implementation, verified results and next steps.",
     type: "PPTX",
-    updated: "Dec 4, 2026",
+    updated: "Nov 10, 2026",
     category: "Final Delivery",
-    size: "22 MB",
+    size: "14 MB",
+    href: `${import.meta.env.BASE_URL}documents/ANDY8_Mesh_Telemetry_Deck.pptx`,
+  },
+  {
+    title: "Prototype Presentation PDF",
+    desc: "Portable PDF export of the November prototype presentation.",
+    type: "PDF",
+    updated: "Nov 10, 2026",
+    category: "Final Delivery",
+    size: "1.4 MB",
+    href: `${import.meta.env.BASE_URL}documents/ANDY8_Mesh_Telemetry_Deck.pdf`,
   },
   {
     title: "Demonstration Video",
@@ -204,8 +215,8 @@ export default function Documentation({ navOffset }: { navOffset: string }) {
             Planning, engineering, testing and final delivery documents — CS 4850 · Fall 2026
           </p>
           <p className="text-xs mt-3 max-w-3xl" style={{ color: "#7F93AA" }}>
-            Only the source repository is currently available. Document cards are retained as the delivery checklist and
-            will activate after verified files are uploaded.
+            The prototype presentation and source repository are available now. Remaining cards form the verified
+            delivery checklist and will activate after upload.
           </p>
         </div>
 
@@ -268,7 +279,8 @@ export default function Documentation({ navOffset }: { navOffset: string }) {
 }
 
 function DocCard({ doc }: { doc: Doc }) {
-  const available = doc.type === "REPO";
+  const available = doc.type === "REPO" || Boolean(doc.href);
+  const href = doc.type === "REPO" ? REPOSITORY_URL : doc.href;
   return (
     <div
       className="rounded-xl border p-4 flex flex-col gap-3 transition-all group"
@@ -311,17 +323,18 @@ function DocCard({ doc }: { doc: Doc }) {
         style={{ borderColor: "rgba(148,163,184,0.08)" }}
       >
         <span className="text-[10px] font-mono" style={{ color: "rgba(169,184,202,0.5)" }}>
-          {available ? "Current source" : "Not yet published"}
+          {available ? doc.updated : "Not yet published"}
         </span>
         {available ? (
           <a
-            href={REPOSITORY_URL}
-            target="_blank"
-            rel="noopener noreferrer"
+            href={href}
+            target={doc.type === "REPO" ? "_blank" : undefined}
+            rel={doc.type === "REPO" ? "noopener noreferrer" : undefined}
+            download={doc.type === "REPO" ? undefined : true}
             className="text-xs font-mono text-[#2491FF] hover:text-[#70B7FF]"
             aria-label={`View ${doc.title}`}
           >
-            View →
+            {doc.type === "REPO" ? "View →" : "Download ↓"}
           </a>
         ) : (
           <span className="text-xs font-mono text-[#7F93AA]" aria-label={`${doc.title} is not yet available`}>

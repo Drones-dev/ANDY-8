@@ -2,6 +2,10 @@ import { Link } from "react-router-dom";
 import { motion, useReducedMotion } from "framer-motion";
 import HowItWorks from "../components/HowItWorks";
 import DroneExplorer from "../components/DroneExplorer";
+import ProblemToProof from "../components/ProblemToProof";
+import PacketExplorer from "../components/PacketExplorer";
+import PrototypeEvidence from "../components/PrototypeEvidence";
+import ApplicationContext from "../components/ApplicationContext";
 
 const HERO_BG = `${import.meta.env.BASE_URL}visuals/andy8-fleet-3d.jpg`;
 const DRONE_A = "https://images.unsplash.com/photo-1621506683092-a4a47fc01dbd?w=320&h=200&fit=crop&auto=format&q=80";
@@ -64,11 +68,11 @@ const features = [
 ];
 
 const statusItems = [
-  { label: "Current Phase", value: "Development & Simulation" },
+  { label: "Current Phase", value: "Simulation Validation & Hardware Integration" },
   { label: "Team Size", value: "5 Engineers" },
   { label: "Planned Effort", value: "592 Hours" },
   { label: "Packet Delivery Target", value: "≥ 95%" },
-  { label: "Route Recovery Target", value: "≤ 3 Seconds" },
+  { label: "Simulated Reroute", value: "≈ 4 Seconds" },
   { label: "Failure Detection Target", value: "≤ 5 Seconds" },
   { label: "Semester", value: "Fall 2026" },
   { label: "Project Status", value: "Implementation in progress" },
@@ -214,8 +218,12 @@ export default function Home({ navOffset }: { navOffset: string }) {
         </div>
       </section>
 
+      <ProblemToProof />
       <HowItWorks />
+      <PacketExplorer />
       <DroneExplorer />
+      <PrototypeEvidence />
+      <ApplicationContext />
 
       {/* ── STATUS STRIP ── */}
       <div
