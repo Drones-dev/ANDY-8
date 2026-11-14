@@ -150,3 +150,5 @@
 
 # Keep the project's small raster assets in regular Git.
 *.png                -filter -diff -merge -text
+*.jpg                -filter -diff -merge -text
+*.jpeg               -filter -diff -merge -text
